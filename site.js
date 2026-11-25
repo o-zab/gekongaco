@@ -37,12 +37,14 @@
 
   const contactFormMarkup = (title) => `
     <form class="page-form inquiry-form">
-      <label>Your name<input name="name" autocomplete="name" placeholder="Full name" required></label>
+      <label>First name<input name="firstName" autocomplete="given-name" placeholder="First name" required></label>
+      <label>Last name<input name="lastName" autocomplete="family-name" placeholder="Last name" required></label>
+      <label>Phone<input name="phone" type="tel" autocomplete="tel" placeholder="Phone"></label>
       <label>Email address<input name="email" type="email" autocomplete="email" placeholder="you@example.com" required></label>
-      <label>Phone number<input name="phone" type="tel" autocomplete="tel" placeholder="+254 7XX XXX XXX"></label>
-      <label>${title === "Sponsorships" ? "Tell us about your organization or event" : "How can we help?"}<textarea name="message" rows="4" placeholder="Share a few details" required></textarea></label>
+      <label>City<input name="city" autocomplete="address-level2" placeholder="City"></label>
+      <label>${title === "Community Enquiries" ? "Describe your enquiry" : "Describe your case"}<textarea name="message" rows="4" placeholder="Brief, non-confidential summary" required></textarea></label>
       <button class="button button-red" type="submit">${title === "Sponsorships" ? "SEND REQUEST" : "SEND INQUIRY"} <span aria-hidden="true">↗</span></button>
-      <p class="page-form-note">This website preview does not send or store form submissions. Call the firm internationally at +1 (956) 226-4232.</p>
+      <p class="page-form-note">This website preview does not send or store form submissions. Call the firm at 07123456789.</p>
       <p class="page-form-status" role="status" aria-live="polite"></p>
     </form>`;
 
@@ -58,8 +60,8 @@
       body = `<section class="page-body"><p class="legal-note">No case-result figures are published here, and no particular outcome is promised or guaranteed.</p></section>`;
     } else if (page.kind === "areas") {
       body = `<section class="page-body"><p class="legal-note">Specific service locations are not listed here. Contact the firm to confirm whether it may assist with your location and matter.</p></section>`;
-    } else if (page.kind === "contact" || page.kind === "sponsorship") {
-      body = `<section class="page-body page-columns"><div class="page-copy"><h2>Contact the firm</h2><p>Call the firm internationally at <a href="tel:+19562264232"><strong>+1 (956) 226-4232</strong></a>.</p><p>Fees and disbursements will be discussed and recorded in the client engagement terms in accordance with applicable law.</p></div>${contactFormMarkup(page.title)}</section>`;
+    } else if (page.kind === "sponsorship") {
+      body = `<section class="page-body page-columns"><div class="page-copy"><h2>Contact the firm</h2><p>Call the firm at <a href="tel:07123456789"><strong>07123456789</strong></a>.</p><p>Fees and disbursements will be discussed and recorded in the client engagement terms in accordance with applicable law.</p></div>${contactFormMarkup(page.title)}</section>`;
     } else if (page.kind === "media") {
       body = `<section class="page-body"><p class="legal-note">Media coverage will be listed here when details are verified and available.</p></section>`;
     } else if (page.kind === "blog") {
@@ -72,12 +74,12 @@
       body = `<section class="page-body">${mainCopy}</section>`;
     }
 
-    const aside = page.kind !== "practice-index" && page.kind !== "contact" && page.kind !== "sponsorship" && page.kind !== "results" && page.kind !== "areas" && page.kind !== "media" && page.kind !== "blog";
+    const aside = page.kind !== "practice-index" && page.kind !== "sponsorship" && page.kind !== "results" && page.kind !== "areas" && page.kind !== "media" && page.kind !== "blog";
     main.innerHTML = `
       <section class="page-shell">
         <div class="page-hero"><div class="page-hero-inner${aside ? "" : " page-hero-inner--single"}">
           <div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><p class="lead">${intro}</p></div>
-          ${aside ? `<aside class="page-aside"><strong>Contact the firm</strong><p>Discuss your matter and possible next steps.</p><a href="tel:+19562264232">CALL +1 (956) 226-4232 <span aria-hidden="true">↗</span></a></aside>` : ""}
+          ${aside ? `<aside class="page-aside"><strong>Contact the firm</strong><p>Discuss your matter and possible next steps.</p><a href="tel:07123456789">CALL 07123456789 <span aria-hidden="true">↗</span></a></aside>` : ""}
         </div></div>
         ${body}
       </section>`;
