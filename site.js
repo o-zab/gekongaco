@@ -25,29 +25,24 @@
 
   const listMarkup = (items = []) => items.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
 
-  const resultClip = `<span class="result-clip" aria-hidden="true"><svg viewBox="0 0 48 68"><path d="M15 28V15a9 9 0 0 1 18 0v13" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M10 27h28l-3 38H13z" fill="currentColor"/><path d="M15 28h18" fill="none" stroke="#aaa" stroke-width="1.5"/></svg></span>`;
-
-  const resultMarkup = () => (data.caseResults || []).map(([amount, category]) => `
-    <article class="result-item">
-      ${resultClip}
-      <p>${escapeHtml(category)}</p>
-      <strong>${escapeHtml(amount)}</strong>
-      <small>COMPENSATION</small>
-    </article>`).join("");
-
-  const cityMarkup = () => (data.serviceCities || []).map(([city, path]) => {
-    const slug = path.replace(/^\//, "");
-    return `<a class="city-card" href="${homeUrl}?page=${encodeURIComponent(slug)}"><strong>${escapeHtml(city)}</strong><span>VIEW LOCATION <span aria-hidden="true">↗</span></span></a>`;
+  const practiceAreasMarkup = (practiceSlugs = []) => practiceSlugs.map((practiceSlug) => {
+    const practice = pages[practiceSlug];
+    return `
+      <article class="practice-list-card">
+        <h2><a href="${homeUrl}?page=${encodeURIComponent(practiceSlug)}">${escapeHtml(practice.title)}</a></h2>
+        <p>${escapeHtml(practice.intro)}</p>
+        ${pageLink(practiceSlug, "LEARN MORE", "text-link")}
+      </article>`;
   }).join("");
 
   const contactFormMarkup = (title) => `
     <form class="page-form inquiry-form">
       <label>Your name<input name="name" autocomplete="name" placeholder="Full name" required></label>
       <label>Email address<input name="email" type="email" autocomplete="email" placeholder="you@example.com" required></label>
-      <label>Phone number<input name="phone" type="tel" autocomplete="tel" placeholder="(555) 555-5555"></label>
+      <label>Phone number<input name="phone" type="tel" autocomplete="tel" placeholder="+254 7XX XXX XXX"></label>
       <label>${title === "Sponsorships" ? "Tell us about your organization or event" : "How can we help?"}<textarea name="message" rows="4" placeholder="Share a few details" required></textarea></label>
-      <button class="button button-red" type="submit">${title === "Sponsorships" ? "SEND REQUEST" : "REQUEST A FREE CONSULTATION"} <span aria-hidden="true">↗</span></button>
-      <p class="page-form-note">This standalone preview does not send or store form submissions. Call (956) 226-4232 to reach the firm.</p>
+      <button class="button button-red" type="submit">${title === "Sponsorships" ? "SEND REQUEST" : "SEND INQUIRY"} <span aria-hidden="true">↗</span></button>
+      <p class="page-form-note">This website preview does not send or store form submissions. Call the firm internationally at +1 (956) 226-4232.</p>
       <p class="page-form-status" role="status" aria-live="polite"></p>
     </form>`;
 
@@ -55,34 +50,34 @@
     const title = escapeHtml(page.title);
     const eyebrow = escapeHtml(page.eyebrow);
     const intro = escapeHtml(page.intro);
-    const description = escapeHtml(page.description);
     let body = "";
 
-    if (page.kind === "results") {
-      body = `<section class="page-body"><p class="eyebrow eyebrow-red">SELECTED CASE OUTCOMES</p><div class="result-grid">${resultMarkup()}</div><p class="legal-note">${escapeHtml(page.intro)} Past results do not guarantee a similar outcome. Every case is different.</p></section>`;
+    if (page.kind === "practice-index") {
+      body = `<section class="page-body"><div class="practice-list-grid">${practiceAreasMarkup(page.practiceSlugs)}</div><p class="legal-note">This website provides general information only and is not legal advice.</p></section>`;
+    } else if (page.kind === "results") {
+      body = `<section class="page-body"><p class="legal-note">No case-result figures are published here, and no particular outcome is promised or guaranteed.</p></section>`;
     } else if (page.kind === "areas") {
-      body = `<section class="page-body"><p class="eyebrow eyebrow-red">KENYA COMMUNITIES WE SERVE</p><div class="city-grid">${cityMarkup()}</div><p class="legal-note">Our team can discuss the details of your location and potential case during a consultation.</p></section>`;
+      body = `<section class="page-body"><p class="legal-note">Specific service locations are not listed here. Contact the firm to confirm whether it may assist with your location and matter.</p></section>`;
     } else if (page.kind === "contact" || page.kind === "sponsorship") {
-      body = `<section class="page-body page-columns"><div class="page-copy"><p>${intro}</p><h2>Talk with our team</h2><p>Call <a href="tel:+19562264232"><strong>(956) 226-4232</strong></a> for South KENYA or <a href="tel:+18326719473"><strong>(832) 671-9473</strong></a> for Houston.</p><p>There is no fee unless we win your case.</p></div>${contactFormMarkup(page.title)}</section>`;
+      body = `<section class="page-body page-columns"><div class="page-copy"><h2>Contact the firm</h2><p>Call the firm internationally at <a href="tel:+19562264232"><strong>+1 (956) 226-4232</strong></a>.</p><p>Fees and disbursements will be discussed and recorded in the client engagement terms in accordance with applicable law.</p></div>${contactFormMarkup(page.title)}</section>`;
     } else if (page.kind === "media") {
-      body = `<section class="page-body"><p>${intro}</p><ul class="media-list">${listMarkup(page.bullets || [])}</ul></section>`;
+      body = `<section class="page-body"><p class="legal-note">Media coverage will be listed here when details are verified and available.</p></section>`;
     } else if (page.kind === "blog") {
-      body = `<section class="page-body"><p>${intro}</p><div class="resource-grid">${(page.bullets || []).map((item) => `<article class="resource-card"><strong>${escapeHtml(item)}</strong><span>LEGAL INSIGHT</span></article>`).join("")}</div><p class="legal-note">These topic cards are a visual preview, not published legal articles.</p></section>`;
+      body = `<section class="page-body"><p class="legal-note">Legal information will be published here when available. Website content is general information, not legal advice.</p></section>`;
     } else {
       const points = page.bullets?.length ? `<ul class="page-points">${listMarkup(page.bullets)}</ul>` : "";
       const sections = page.sections?.length ? `<div class="page-sections">${sectionsMarkup(page.sections)}</div>` : "";
-      const related = page.kind === "attorney" || page.kind === "about" ? pageLink("our-firm", "GEKONG'A & COMPANY") : pageLink("areas-we-serve", "VIEW ALL SERVICE AREAS");
-      const mainCopy = `<div class="page-copy"><p>${intro}</p>${points}${sections}<p class="legal-note">${description} This page provides general information and is not legal advice.</p>${related}</div>`;
-      const aside = `<aside class="page-card"><p class="eyebrow">HERE WHEN YOU NEED US</p><h2>Let’s talk about what happened.</h2><p>Our team can help you understand possible next steps.</p><a class="button button-red" href="${homeUrl}?page=contact-us">FREE CONSULTATION <span aria-hidden="true">↗</span></a></aside>`;
-      body = `<section class="page-body page-columns">${mainCopy}${aside}</section>`;
+      const related = pageLink("areas-we-serve", "VIEW AREAS OF SERVICE");
+      const mainCopy = `<div class="page-copy">${points}${sections}<p class="legal-note">This page is general information, not legal advice.</p>${related}</div>`;
+      body = `<section class="page-body">${mainCopy}</section>`;
     }
 
-    const aside = page.kind !== "contact" && page.kind !== "sponsorship" && page.kind !== "results" && page.kind !== "areas" && page.kind !== "media" && page.kind !== "blog";
+    const aside = page.kind !== "practice-index" && page.kind !== "contact" && page.kind !== "sponsorship" && page.kind !== "results" && page.kind !== "areas" && page.kind !== "media" && page.kind !== "blog";
     main.innerHTML = `
       <section class="page-shell">
-        <div class="page-hero"><div class="page-hero-inner">
+        <div class="page-hero"><div class="page-hero-inner${aside ? "" : " page-hero-inner--single"}">
           <div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><p class="lead">${intro}</p></div>
-          ${aside ? `<aside class="page-aside"><strong>Free consultation</strong><p>Speak with our team about your questions and possible next steps.</p><a href="tel:+19562264232">CALL (956) 226-4232 <span aria-hidden="true">↗</span></a></aside>` : ""}
+          ${aside ? `<aside class="page-aside"><strong>Contact the firm</strong><p>Discuss your matter and possible next steps.</p><a href="tel:+19562264232">CALL +1 (956) 226-4232 <span aria-hidden="true">↗</span></a></aside>` : ""}
         </div></div>
         ${body}
       </section>`;
@@ -102,25 +97,137 @@
   if (menuButton) {
     menuButton.addEventListener("click", () => {
       const expanded = menuButton.getAttribute("aria-expanded") === "true";
-      menuButton.setAttribute("aria-expanded", String(!expanded));
-      document.body.classList.toggle("nav-open", !expanded);
+      const isOpen = !expanded;
+      menuButton.setAttribute("aria-expanded", String(isOpen));
+      menuButton.setAttribute("aria-label", isOpen ? "Close menu" : "Open menu");
+      document.body.classList.toggle("nav-open", isOpen);
     });
   }
 
-  const homeResults = document.querySelector(".results-preview");
-  const previousResults = document.querySelector(".results-prev");
-  const nextResults = document.querySelector(".results-next");
+  document.querySelectorAll(".nav-group").forEach((group) => {
+    const summary = group.querySelector("summary");
+    group.addEventListener("toggle", () => {
+      const hasOpenMobileSubmenu = window.matchMedia("(max-width: 640px)").matches
+        && Boolean(document.querySelector(".nav-group[open]"));
+      document.body.classList.toggle("nav-submenu-open", hasOpenMobileSubmenu);
+    });
+    group.querySelector(".mobile-submenu-back")?.addEventListener("click", () => {
+      group.open = false;
+    });
+    const supportsMenuHover = () => window.matchMedia("(min-width: 901px) and (hover: hover) and (pointer: fine)").matches;
+    group.addEventListener("pointerenter", (event) => {
+      if (event.pointerType === "mouse" && supportsMenuHover()) group.open = true;
+    });
+    group.addEventListener("pointerleave", (event) => {
+      if (event.pointerType === "mouse" && supportsMenuHover()) group.open = false;
+    });
+    summary?.addEventListener("click", (event) => {
+      if (event.detail > 0 && supportsMenuHover() && group.matches(":hover")) {
+        event.preventDefault();
+      }
+    });
+  });
 
-  if (homeResults && previousResults && nextResults) {
-    const updateResultsControls = () => {
-      previousResults.disabled = homeResults.scrollLeft <= 2;
-      nextResults.disabled = homeResults.scrollLeft + homeResults.clientWidth >= homeResults.scrollWidth - 2;
+  const practiceTrack = document.querySelector(".practice-grid");
+  const practiceCards = practiceTrack ? [...practiceTrack.querySelectorAll("article")] : [];
+  const practiceDots = [...document.querySelectorAll(".practice-carousel-dots button")];
+
+  if (practiceTrack && practiceCards.length && practiceDots.length) {
+    const practiceSection = practiceTrack.closest(".practice-home");
+    const practiceCarouselMedia = window.matchMedia("(max-width: 640px)");
+    const reducedMotionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let practiceAutoplayTimer;
+
+    const setActivePracticeDot = (activeIndex) => {
+      practiceDots.forEach((dot, index) => {
+        if (index === activeIndex) dot.setAttribute("aria-current", "true");
+        else dot.removeAttribute("aria-current");
+      });
     };
 
-    previousResults.addEventListener("click", () => homeResults.scrollBy({ left: -(homeResults.clientWidth + 16), behavior: "smooth" }));
-    nextResults.addEventListener("click", () => homeResults.scrollBy({ left: homeResults.clientWidth + 16, behavior: "smooth" }));
-    homeResults.addEventListener("scroll", updateResultsControls, { passive: true });
-    updateResultsControls();
+    const updatePracticeDots = () => {
+      const trackLeft = practiceTrack.getBoundingClientRect().left;
+      let activeIndex = 0;
+      let closestDistance = Infinity;
+
+      practiceCards.forEach((card, index) => {
+        const distance = Math.abs(card.getBoundingClientRect().left - trackLeft);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          activeIndex = index;
+        }
+      });
+
+      setActivePracticeDot(activeIndex);
+    };
+
+    const stopPracticeAutoplay = () => {
+      window.clearTimeout(practiceAutoplayTimer);
+      practiceAutoplayTimer = undefined;
+    };
+
+    const schedulePracticeAutoplay = () => {
+      stopPracticeAutoplay();
+      const isFinePointerHovering = window.matchMedia("(hover: hover) and (pointer: fine)").matches
+        && practiceSection.matches(":hover");
+      if (!practiceCarouselMedia.matches || reducedMotionMedia.matches || document.hidden
+        || isFinePointerHovering || practiceSection.contains(document.activeElement)) return;
+
+      practiceAutoplayTimer = window.setTimeout(() => {
+        const activeIndex = practiceDots.findIndex((dot) => dot.getAttribute("aria-current") === "true");
+        const nextIndex = (activeIndex + 1 + practiceCards.length) % practiceCards.length;
+        const nextCard = practiceCards[nextIndex];
+        const left = practiceTrack.scrollLeft
+          + nextCard.getBoundingClientRect().left
+          - practiceTrack.getBoundingClientRect().left;
+
+        setActivePracticeDot(nextIndex);
+        practiceTrack.scrollTo({ left, behavior: "smooth" });
+        schedulePracticeAutoplay();
+      }, 3000);
+    };
+
+    practiceDots.forEach((dot, index) => {
+      dot.addEventListener("click", () => {
+        const card = practiceCards[index];
+        if (!card) return;
+        setActivePracticeDot(index);
+        const left = practiceTrack.scrollLeft
+          + card.getBoundingClientRect().left
+          - practiceTrack.getBoundingClientRect().left;
+        practiceTrack.scrollTo({
+          left,
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+        });
+        schedulePracticeAutoplay();
+      });
+    });
+
+    const updateAfterGesture = () => window.setTimeout(updatePracticeDots, 200);
+    practiceTrack.addEventListener("scroll", updatePracticeDots, { passive: true });
+    practiceTrack.addEventListener("scrollend", updatePracticeDots);
+    practiceTrack.addEventListener("touchstart", stopPracticeAutoplay, { passive: true });
+    practiceTrack.addEventListener("touchend", () => {
+      updateAfterGesture();
+      schedulePracticeAutoplay();
+    }, { passive: true });
+    practiceTrack.addEventListener("pointerup", schedulePracticeAutoplay, { passive: true });
+    practiceSection.addEventListener("pointerenter", stopPracticeAutoplay);
+    practiceSection.addEventListener("pointerleave", schedulePracticeAutoplay);
+    practiceSection.addEventListener("focusin", stopPracticeAutoplay);
+    practiceSection.addEventListener("focusout", (event) => {
+      if (!practiceSection.contains(event.relatedTarget)) schedulePracticeAutoplay();
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stopPracticeAutoplay();
+      else schedulePracticeAutoplay();
+    });
+    window.addEventListener("resize", () => {
+      updatePracticeDots();
+      schedulePracticeAutoplay();
+    });
+    updatePracticeDots();
+    schedulePracticeAutoplay();
   }
 
   const updateHeaderState = () => {
@@ -144,6 +251,41 @@
     const status = event.target.querySelector(".form-status, .page-form-status");
     if (status) status.textContent = "This preview doesn’t send messages. Please call the firm directly.";
   });
+
+  const revealTargets = document.querySelectorAll([
+    ".hero-copy",
+    ".results-home > *",
+    ".about-intro",
+    ".about-points article",
+    ".practice-intro",
+    ".practice-grid article",
+    ".strategy-cta > *",
+    ".service-home > *",
+    ".home-contact > *",
+    ".page-hero-inner > *",
+    ".page-body > *",
+    ".page-body .page-points li",
+    ".page-body .info-card",
+    ".page-body .page-form",
+    ".page-body .page-card",
+  ].join(","));
+
+  if (revealTargets.length && "IntersectionObserver" in window
+    && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-revealed");
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -32px 0px" });
+
+    document.body.classList.add("scroll-reveal-ready");
+    revealTargets.forEach((element) => {
+      element.classList.add("scroll-reveal");
+      revealObserver.observe(element);
+    });
+  }
 
   const year = document.querySelector("#copyright-year");
   if (year) year.textContent = String(new Date().getFullYear());
